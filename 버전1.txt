@@ -1,0 +1,94 @@
+function UpSha256ToBase62(a : String): String;
+var
+  total , mid ,tran62 , tail : String;
+  i ,j, tran10 , tail10: integer;
+begin
+  total := '';
+  for i := 1 to (length(a) div 4) do
+  begin
+    mid := copy(a,(i-1)*4+1,4); //4자리씩 짜른게들감
+    tran10 := ChanStringto10(mid,16);
+    tran62 := Chan10tob(tran10,62);
+    while length(tran62)<3 do
+    begin
+      tran62 := '0'+tran62;
+    end;
+    total := total+tran62;
+  end;
+  if (Length(a) mod 4) <> 0 then //어차피 이건 맨뒤만 작용한다.
+  begin
+    tail := copy(a,((Length(a) div 4)*4)+1,Length(a) mod 4); //맨뒤 나머지
+    for i := 1 to Length(a) mod 4 do
+    begin
+      if tail[i] = '0' then
+      begin
+        total := total+'0';//공간 맟 추 기
+      end
+      else
+      begin
+        break;//앞자리 0만 맟춰라
+      end;
+    end;
+    tail10 := ChanStringto10(tail,16);
+    tail := Chan10tob(tail10,62);
+    total := total+tail;
+  end;
+  Result := total;
+end;
+
+function UpBase62ToSha256(a : String): String;//거꾸로
+var
+  total , mid ,tran16 , tail: String;
+  i , j , lentail , tran10 : integer;
+begin
+  for i := 1 to ((length(a)-1) div 3) do //여기까지는 동일하게 해도됨
+  begin  //자릿수때매 숫자더러워진것
+    mid := copy(a,(i-1)*3+1,3); //3자리씩 짜른게들감
+    tran10 := ChanStringto10(mid,62);
+    tran16 := Chan10tob(tran10,16);
+    while length(tran16)<4 do
+    begin
+      tran16 := '0'+tran16;
+    end;
+    total := total+tran16;
+  end;
+  if (length(a) mod 3) = 0 then
+  begin
+    lentail := 3;
+    tail := copy(a,((length(a) div 3))*3-2,lentail);
+    for i := 1 to lentail do
+    begin
+      if tail[i] = '0' then
+      begin
+        total := total+'0';//공간 맟 추 기
+      end
+      else
+      begin
+        break;//앞자리 0만 맟춰라
+      end;
+    end;
+    j := ChanStringto10(tail,62);
+    tail := Chan10tob(j,16);
+    total := total+ tail;
+  end
+  else //남은게3의배수가 아니면
+  begin
+    lentail := (length(a) mod 3);
+    tail := copy(a,((length(a) div 3))*3+1,lentail);
+    for i := 1 to lentail do
+    begin
+      if tail[i] = '0' then
+      begin
+        total := total+'0';//공간 맟 추 기
+      end
+      else
+      begin
+        break;//앞자리 0만 맟춰라
+      end;
+    end;
+    j := ChanStringto10(tail,62);
+    tail := Chan10tob(j,16);
+    total := total+ tail; //맨마지막3자리든2자리든가져와
+  end;
+  Result := total;
+end;

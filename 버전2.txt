@@ -1,0 +1,94 @@
+function Sel16to62bit0(word : String ; len4 : Boolean): String;//4(16)->3(62)자리혹은 걍바꾸시오
+//빈자리0들주의
+var
+  total : String;
+  i : integer;
+begin
+  if len4 then //만약 문자열이 4개를 3으로 바꾸는 거면
+  begin
+    total :=Chan10tob(ChanStringto10(word,16),62);
+    if length(total) < 3 then
+    begin
+      for i := length(total) to 2 do
+      begin
+        total := '0'+total;//무조건 길이가3개가 되도록해라
+      end;
+    end;
+  end
+  else  //딱히 그게아니라 걍 바꾸는 거면(나머지앞의 0주의)
+  begin
+    total :=Chan10tob(ChanStringto10(word,16),62); //딱히 자릿수 필요없으면
+  end;
+  result := total;
+end;
+
+function UpGradeKill16to62(qu : string): String;//16->62한방에가자이건 통짜고
+var
+  i  : integer;
+  sum : String;
+begin
+  sum := '';
+  if (length(qu) mod 4) = 0 then
+  begin  //4의배수이면
+    for i:= 1 to (length(qu) div 4) do
+    begin
+      sum := sum +Sel16to62bit0(copy(qu,(4*i-3),4),true);
+    end;
+  end
+  else
+  begin //4의배수가 아니면
+    for i:= 1 to (length(qu) div 4) do
+    begin
+      sum := sum +Sel16to62bit0(copy(qu,(4*i-3),4),true);
+    end;
+    sum := sum + Sel16to62bit0(copy(qu,((length(qu) div 4)*4+1),(length(qu) mod 4)),false);
+  end;
+  Result := sum;
+end;//좋은 한방
+
+function Sel62to16bit0(word : String ; itTail : Boolean): String;  //3(62)->4(16)
+var
+  i , len62 : integer;
+  total , tail : string;
+begin
+  total := '';
+  if itTail then //이게 마지막 끝부분인가
+  begin
+    for i := 1 to length(word) do
+    begin
+      if word[i] <> '0' then break
+      else total := '0'+total;
+    end;
+    total := total+Chan10tob(ChanStringto10(word,62),16);
+  end
+  else  //아닌가
+  begin //끝이아니면 무조건4자리가 나오도록 바꿔라
+    total :=Chan10tob(ChanStringto10(word,62),16);
+    if length(total) < 4 then
+    begin
+      for i := length(total) to 3 do
+      begin
+        total := '0'+total;//무조건 길이가3개가 되도록해라
+      end;
+    end;
+  end;
+  Result := total;
+end;
+
+function UpGradeKill62to16(qu : string): String;
+var
+  i , lentail ,a: integer;
+  total : string;
+begin
+  total := '';
+  lentail :=3;//초기화꼬리짜르기 준비
+  if ((length(qu) mod 3) <> 0 )then lentail := length(qu) mod 3;
+  a := length(qu) - lentail; //무조건 3의 배수 꼬리짜른 나머지가 나옴
+  for i := 1 to (a div 3) do
+  begin
+    total := total+Sel62to16bit0(copy(qu,i*3-2,3),false);
+  end;
+  total := total + Sel62to16bit0(copy(qu,a+1,lentail) ,true);
+  Result := total;
+end;
+///여기까지가 62->16
